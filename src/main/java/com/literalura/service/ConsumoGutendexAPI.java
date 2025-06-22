@@ -1,10 +1,12 @@
 package com.literalura.service;
 
+import org.springframework.stereotype.Service;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
+@Service
 public class ConsumoGutendexAPI {
 
     private static final String BASE_URL = "https://gutendex.com/books/?search=";

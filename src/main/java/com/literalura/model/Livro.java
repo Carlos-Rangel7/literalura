@@ -18,6 +18,13 @@ public class Livro {
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Autor> autores;
 
+    public Livro(){}
+    public Livro(String titulo, String idioma, int numeroDeDownloads) {
+        this.titulo = titulo;
+        this.idioma = idioma;
+        this.numeroDeDownloads = numeroDeDownloads;
+    }
+
     public List<Autor> getAutores() {
         return autores;
     }
@@ -52,5 +59,17 @@ public class Livro {
 
     public void setNumeroDeDownloads(int numeroDeDownloads) {
         this.numeroDeDownloads = numeroDeDownloads;
+    }
+
+    @Override
+    public String toString() {
+        String nomeAutor = (autores != null && !autores.isEmpty()) ? autores.get(0).getNomeAutor() : "Desconhecido";
+        return """
+            *** LIVRO ***
+            Autor : %s
+            Titulo: %s
+            Idioma: %s
+            Downloads: %d
+            """.formatted(autores, titulo, idioma, numeroDeDownloads);
     }
 }

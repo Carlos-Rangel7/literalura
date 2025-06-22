@@ -2,6 +2,7 @@ package com.literalura.model;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -17,6 +18,13 @@ public class Autor {
 
     @ManyToMany(mappedBy = "autores", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Livro> livros = new ArrayList<>();
+
+    public Autor(){}
+    public Autor(String nomeAutor, Integer anoNascimento, Integer anoFalecimento) {
+        this.nomeAutor = nomeAutor;
+        this.anoNascimento = anoNascimento;
+        this.anoFalecimento = anoFalecimento;
+    }
 
     public Long getId() {
         return id;
@@ -54,4 +62,20 @@ public class Autor {
         this.livros = livros;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(nomeAutor);
+
+        if (anoNascimento != null) {
+            sb.append(" (nascido em ").append(anoNascimento);
+        }
+
+        if (anoFalecimento != null) {
+            sb.append(", falecido em ").append(anoFalecimento).append(")");
+        } else {
+            sb.append(", ainda vivo)");
+        }
+
+        return sb.toString();
+    }
 }
