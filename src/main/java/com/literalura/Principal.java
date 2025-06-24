@@ -1,13 +1,16 @@
 package com.literalura;
 
 import com.literalura.dto.LivroDTO;
+import com.literalura.model.Autor;
 import com.literalura.model.Livro;
 import com.literalura.repository.LivroRepository;
+import com.literalura.service.AutorService;
 import com.literalura.service.ConsumoGutendexAPI;
 import com.literalura.service.LivroService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Scanner;
 
 @Component
@@ -16,6 +19,9 @@ public class Principal {
 
     @Autowired
     private LivroService livroService;
+
+    @Autowired
+    private AutorService autorservice;
 
     public void exibirMenu() {
         var opcao = -1;
@@ -35,6 +41,14 @@ public class Principal {
             switch (opcao) {
                 case 1:
                     buscaLivro();
+                    break;
+
+                case 2:
+                    listarTodosLivros();
+                    break;
+
+                case 3:
+                    listarAutoresRegistrados();
                     break;
 
                 case 0:
@@ -70,10 +84,37 @@ public class Principal {
                             )),
                             () -> System.out.println("Livro não encontrado ou erro na busca.")
                     );
-
             System.out.println("Deseja buscar outro livro? (S/N)");
             cadastraLivro = sc.nextLine();
         }
+    }
+
+    private void listarTodosLivros() {
+        List<Livro> livros = livroService.listarTodosLivro();
+        livros.forEach(System.out::println);
+    }
+
+    private void listarAutoresRegistrados() {
+        List<Autor> autores = autorservice.listaAutores();
+        autores.forEach(a -> {
+            System.out.printf(
+                    """
+                            \nAutor: %s
+                            Nascimento: %s
+                            Falecimento: %s 
+                            """,
+                    a.getNomeAutor(),
+                    a.getAnoNascimento(),
+                    a.getAnoFalecimento() == null ? "Vivo" : a.getAnoFalecimento()
+            );
+            System.out.println("Livros:");
+            a.getLivros().forEach(l -> System.out.println(" - " + l.getTitulo()) );
+            System.out.println("------------------------------");
+        });
+
+
+
+
     }
 
 }

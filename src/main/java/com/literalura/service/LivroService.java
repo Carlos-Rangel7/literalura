@@ -6,7 +6,9 @@ import com.literalura.dto.AutorDTO;
 import com.literalura.dto.LivroDTO;
 import com.literalura.model.Autor;
 import com.literalura.model.Livro;
+import com.literalura.repository.AutorRepository;
 import com.literalura.repository.LivroRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,13 +20,16 @@ public class LivroService {
     private final ConsumoGutendexAPI api;
     private final ObjectMapper mapper;
     private final LivroRepository livroRepository;
+    private AutorRepository autorRepository;
 
-    public LivroService(ConsumoGutendexAPI api, LivroRepository livroRepository) {
+    public LivroService(ConsumoGutendexAPI api, LivroRepository livroRepository, AutorRepository autorRepository) {
         this.api = api;
         this.mapper = new ObjectMapper();
         this.livroRepository = livroRepository;
+        this.autorRepository = autorRepository;
     }
 
+    @Transactional // Garante que todas as operações dentro do método ocorram na mesma transação
     public Optional<Livro> buscarELancarLivro(String titulo) {
         String json = api.buscarLivros(titulo);
         if (json == null || json.isEmpty()) return Optional.empty();
@@ -39,17 +44,29 @@ public class LivroService {
 
             if (!dto.autores().isEmpty()) {
                 AutorDTO autorDTO = dto.autores().get(0);
-                Autor autor = new Autor(autorDTO.nomeAutor(), autorDTO.anoNascimento(), autorDTO.anoFalecimento());
-                livro.setAutores(List.of(autor));
-            }
 
+                Optional<Autor> autorExistente = autorRepository.findByNomeAutorIgnoreCase(autorDTO.nomeAutor());
+
+                Autor autor;
+                if (autorExistente.isPresent()) {
+                    autor = autorRepository.save(autorExistente.get());
+                } else {
+                    autor = new Autor(autorDTO.nomeAutor(), autorDTO.anoNascimento(), autorDTO.anoFalecimento());
+                    autor = autorRepository.save(autor);
+                }
+                livro.setAutores(List.of(autor));
+                autor.getLivros().add(livro);
+            }
             livroRepository.save(livro);
             return Optional.of(livro);
-
         } catch (Exception e) {
             System.out.println("Erro ao converter JSON: " + e.getMessage());
+            e.printStackTrace();
             return Optional.empty();
         }
     }
 
+    public List<Livro> listarTodosLivro() {
+        return livroRepository.findAll();
+    }
 }

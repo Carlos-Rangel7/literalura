@@ -15,7 +15,7 @@ public class Livro {
     private String idioma;
     private int numeroDeDownloads;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     private List<Autor> autores;
 
     public Livro(){}
