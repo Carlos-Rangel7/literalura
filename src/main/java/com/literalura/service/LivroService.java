@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class LivroService {
@@ -68,5 +70,37 @@ public class LivroService {
 
     public List<Livro> listarTodosLivro() {
         return livroRepository.findAll();
+    }
+
+    public List<Livro> listaLivroPorIdioma(String idioma ) {
+        List<Livro> livros = livroRepository.listaLivroIdioma(idioma);
+        if(!livros.isEmpty()) {
+            return livros;
+        }else {
+            System.out.println("Nenhum livro encontrado nesse idioma");
+            return List.of();
+        }
+    }
+
+    public List<LivroDTO> buscarTopLivrosMaisBaixados(int limite) {
+        String json = api.buscarLivrosComParametros("sort=-download_count");
+        try {
+            JsonNode root = mapper.readTree(json);
+            JsonNode results = root.get("results");
+            return Stream.iterate(0, i -> i + 1)
+                    .limit(Math.min(limite, results.size()))
+                    .map(results::get)
+                    .map(node -> {
+                        try {
+                            return mapper.treeToValue(node, LivroDTO.class);
+                        } catch (Exception e) {
+                            throw new RuntimeException("Erro ao converter JSON para LivroDTO", e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println("Erro ao processar JSON: " + e.getMessage());
+            return List.of();
+        }
     }
 }
